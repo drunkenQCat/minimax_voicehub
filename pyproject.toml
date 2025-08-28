@@ -1,0 +1,18 @@
+[project]
+name = "minimax-voicehub"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pandas>=2.0.0",
+    "pydantic>=2.0.0",
+    "requests>=2.31.0",
+    "streamlit>=1.28.0",
+    "typing-extensions>=4.0.0",
+    "minimax_speech",
+]
+[tool.uv.sources]
+dftt-timecode = { git = "https://github.com/drunkenQCat/dftt_timecode.git", branch = "dev" }
+minimax_speech = { git = "https://github.com/drunkenQCat/minimax_speech.git", branch = "master" }
+bwav-otio-composer = { git = "https://github.com/drunkenQCat/bwav-otio-composer.git", branch = "master" }
