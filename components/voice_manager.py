@@ -4,6 +4,7 @@ MiniMax 音色管理器核心类
 
 import os
 import streamlit as st
+from typing import Any
 from minimax_speech import MiniMaxSpeech
 from minimax_speech.voice_query_models import VoiceCloning
 from minimax_speech.tts_models import T2AResponse
@@ -13,15 +14,19 @@ class VoiceManager:
     """音色管理器"""
 
     client: MiniMaxSpeech
-    voices_cache: list[VoiceCloning] | None
-    voices_cache_time: int
+    cloned_voices_cache: list[VoiceCloning] | None
+    cloned_voices_cache_time: int
+    system_voices_cache: list[Any] | None
+    system_voices_cache_time: int
     current_voice: str = ""
 
     def __init__(self) -> None:
         api_key = os.getenv("MINIMAX_API_KEY", "")
         group_id = os.getenv("MINIMAX_GROUP_ID", "")
-        self.voices_cache = []
-        self.voices_cache_time = 0
+        self.cloned_voices_cache = None
+        self.cloned_voices_cache_time = 0
+        self.system_voices_cache = None
+        self.system_voices_cache_time = 0
         self.init_client(api_key, group_id)
         # 初始化 session_state 中的确认状态
         if "confirm_delete_id" not in st.session_state:
@@ -36,23 +41,55 @@ class VoiceManager:
             st.error(f"初始化客户端失败: {str(e)}")
             return False
 
-    def get_voices(self, force_refresh: bool = False):
-        """获取音色列表"""
-        if (
-            self.voices_cache is None
-            or force_refresh
-            or self.voices_cache_time is None
-            or (int(st.session_state.get("current_time", 0)) - self.voices_cache_time)
-            > 300
-        ):  # 5分钟缓存
+    def get_voices(self, voice_type: str = "clone", force_refresh: bool = False):
+        """
+        获取音色列表
+        :param voice_type: 'clone' 或 'system'
+        :param force_refresh: 是否强制刷新
+        """
+        current_time = int(st.session_state.get("current_time", 0))
+
+        if voice_type == "clone":
+            cache = self.cloned_voices_cache
+            cache_time = self.cloned_voices_cache_time
+            # 5分钟缓存
+            is_cache_valid = cache is not None and (current_time - cache_time) <= 300
+
+            if not force_refresh and is_cache_valid:
+                # 如果没有必要刷新，就跳过
+                return self.cloned_voices_cache
             try:
-                self.voices_cache = self.client.get_cloned_voices()
-                self.voices_cache_time = st.session_state.get("current_time", 0)
-                return self.voices_cache
+                st.toast("正在获取克隆音色列表...")
+                self.cloned_voices_cache = self.client.get_cloned_voices()
+                self.cloned_voices_cache_time = current_time
+                if self.cloned_voices_cache is not None:
+                    self.current_voice = self.cloned_voices_cache[0].voice_id
             except Exception as e:
-                st.error(f"获取音色列表失败: {str(e)}")
-                return []
-        return self.voices_cache
+                st.error(f"获取克隆音色列表失败: {str(e)}")
+                self.cloned_voices_cache = []
+            return self.cloned_voices_cache
+
+        elif voice_type == "system":
+            cache = self.system_voices_cache
+            cache_time = self.system_voices_cache_time
+            # 5分钟缓存
+            is_cache_valid = cache is not None and (current_time - cache_time) <= 300
+
+            if not force_refresh and is_cache_valid:
+                # 如果没有必要刷新，就跳过
+                return self.system_voices_cache
+            try:
+                st.toast("正在获取系统音色列表...")
+                self.system_voices_cache = self.client.get_system_voices()
+                self.system_voices_cache_time = current_time
+                if self.system_voices_cache is not None:
+                    self.current_voice = self.system_voices_cache[0].voice_id
+            except Exception as e:
+                st.error(f"获取系统音色列表失败: {str(e)}")
+                self.system_voices_cache = []
+            return self.system_voices_cache
+
+        return []
 
     def delete_voice(self, voice_id: str):
         """删除音色"""

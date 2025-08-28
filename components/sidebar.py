@@ -26,7 +26,6 @@ def render_sidebar(voice_manager: VoiceManager):
             value=os.environ.get("MINIMAX_GROUP_ID", ""),
         )
         voice_manager.init_client(api_key, group_id)
-        voice_manager.get_voices(force_refresh=True)
 
         if st.button("🔗 连接", type="primary"):
             if api_key and group_id:

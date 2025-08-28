@@ -16,6 +16,9 @@ from pages import (
 )
 
 
+import sys
+from components.debug_panel import display_debug_panel
+
 def main():
     """主应用函数"""
     st.set_page_config(
@@ -24,6 +27,10 @@ def main():
         layout="wide",
         initial_sidebar_state="collapsed",
     )
+
+    # 检查是否传入 --debug 参数
+    if "--debug" in sys.argv and "debug_mode" not in st.session_state:
+        st.session_state.debug_mode = True
 
     st.title("🎵 MiniMax 音色管理器")
     st.markdown("---")

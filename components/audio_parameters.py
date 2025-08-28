@@ -9,9 +9,7 @@ from utils.naming import generate_safe_filename
 
 
 def render_audio_parameters(voice_manager: VoiceManager):
-    voice_options = st.session_state.get("voice_options", {})
-    selected_voice_option = st.session_state.get("selected_clone_voice_option", "")
-    voice_id = voice_options.get(selected_voice_option, "") if voice_options else ""
+    voice_id = voice_manager.current_voice
     # 音频参数
 
     col_a, col_b = st.columns(2)

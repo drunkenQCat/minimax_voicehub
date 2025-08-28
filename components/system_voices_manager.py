@@ -17,7 +17,7 @@ class APIVoice:
 def render_system_voices_manager(voice_manager: VoiceManager):
     def update_selected_voice():
         """更新选中的音色"""
-        voice_id = st.session_state.get("selected_system_voice_num", "")
+        voice_id = st.session_state.get("selected_system_voice_option", "")
         voice_manager.current_voice = (
             st.session_state.voice_options[voice_id] if voice_id else ""
         )
@@ -35,30 +35,32 @@ def render_system_voices_manager(voice_manager: VoiceManager):
     # 合并基础音色和API获取的音色
 
     with st.spinner("正在获取系统音色..."):
-        api_response = None
-        try:
-            # 获取API中的系统音色
-            api_response = voice_manager.client.get_voice("system")
-        except Exception as e:
-            st.error(f"获取系统音色失败: {str(e)}")
-        if not api_response or not api_response.system_voice:
-            st.warning("未获取到系统音色")
-            return
-        # 创建API音色对象
-        api_voices: list[APIVoice] = []
-        for voice_info in api_response.system_voice:
-            # 创建一个类似Voice枚举的对象
-            api_voice = APIVoice(
-                voice_id=voice_info.voice_id,
-                name=voice_info.voice_name or voice_info.voice_id,
-                description=voice_info.description or "",
-            )
-            api_voices.append(api_voice)
+        # 使用新的 get_voices 方法获取系统音色，内置缓存机制
+        api_system_voices_data = voice_manager.get_voices(voice_type="system")
 
-        # 更新session_state
-        st.session_state.api_system_voices = api_voices
-        st.success(f"成功获取 {len(api_voices)} 个系统音色")
-        # st.rerun()
+        if not api_system_voices_data:
+            st.warning("未获取到系统音色")
+            # even if it fails, we should ensure the list is empty
+            st.session_state.api_system_voices = []
+            api_voices = []
+        else:
+            # 创建API音色对象
+            api_voices: list[APIVoice] = []
+            for voice_info in api_system_voices_data:
+                # 创建一个类似Voice枚举的对象
+                api_voice = APIVoice(
+                    voice_id=voice_info.voice_id,
+                    name=voice_info.voice_name or voice_info.voice_id,
+                    description=voice_info.description or "",
+                )
+                api_voices.append(api_voice)
+
+            # 更新session_state
+            if "api_system_voices" not in st.session_state or len(
+                st.session_state.api_system_voices
+            ) != len(api_voices):
+                st.success(f"成功获取 {len(api_voices)} 个系统音色")
+            st.session_state.api_system_voices = api_voices
     # 添加获取API系统音色的按钮
     col_search, col_clear_search = st.columns([2, 1])
 
@@ -136,7 +138,6 @@ def render_system_voices_manager(voice_manager: VoiceManager):
         selectbox_help = (
             f"搜索结果：'{search_term}' 匹配到 {len(filtered_voices)} 个音色"
         )
-        voice_manager.current_voice = filtered_voices[0].value
     elif search_term and not filtered_voices:
         selectbox_label = "❌ 选择系统音色 (无匹配结果)"
         selectbox_help = f"搜索 '{search_term}' 没有找到匹配的音色"
@@ -149,5 +150,7 @@ def render_system_voices_manager(voice_manager: VoiceManager):
         options=list(voice_options.keys()),
         help=selectbox_help,
         on_change=update_selected_voice,
-        key="selected_system_voice_num",
+        key="selected_system_voice_option",
     )
+    if search_term and filtered_voices:
+        update_selected_voice()

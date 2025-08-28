@@ -4,6 +4,14 @@ from components.voice_manager import VoiceManager
 
 
 def render_clone_voices_manager(voice_manager: VoiceManager):
+
+    def update_selected_voice():
+        """更新选中的音色"""
+        voice_id = st.session_state.get("selected_clone_voice_option", "")
+        voice_manager.current_voice = (
+            st.session_state.voice_options[voice_id] if voice_id else ""
+        )
+
     # 搜索音色
     voices = voice_manager.get_voices()
     if not voices:
@@ -50,7 +58,6 @@ def render_clone_voices_manager(voice_manager: VoiceManager):
             st.success(
                 f"🔍 搜索 '{search_voice}' 找到 {len(filtered_test_voices)} 个匹配音色"
             )
-            voice_manager.current_voice = filtered_test_voices[0].voice_id
         else:
             st.warning(f"🔍 搜索 '{search_voice}' 没有找到匹配的音色")
 
@@ -87,15 +94,7 @@ def render_clone_voices_manager(voice_manager: VoiceManager):
                 if voice_id == quick_test_voice_id:
                     default_index = i
                     break
-
-        def update_selected_voice():
-            """更新选中的音色"""
-            voice_id = st.session_state.get("selected_clone_voice_option", "")
-            voice_manager.current_voice = (
-                st.session_state.voice_options[voice_id] if voice_id else ""
-            )
-
-        selected_voice = st.selectbox(
+        st.selectbox(
             selectbox_label,
             options=list(voice_options.keys()),
             index=default_index,
@@ -103,5 +102,7 @@ def render_clone_voices_manager(voice_manager: VoiceManager):
             on_change=update_selected_voice,
             key="selected_clone_voice_option",
         )
+        if search_voice:
+            update_selected_voice()
     else:
         st.warning("没有可用的音色进行测试")

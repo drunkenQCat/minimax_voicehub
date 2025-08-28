@@ -6,6 +6,7 @@ from components.audio_parameters import render_audio_parameters
 from components.clone_voices_manager import render_clone_voices_manager
 from components.system_voices_manager import render_system_voices_manager
 from components.voice_manager import VoiceManager
+from components.debug_panel import display_debug_panel
 
 
 def render_test_voice(voice_manager: VoiceManager) -> None:
@@ -71,33 +72,36 @@ def render_test_voice(voice_manager: VoiceManager) -> None:
         render_audio_parameters(voice_manager)
 
     with explain_col:
-        st.info(
+        if st.session_state.get("debug_mode"):
+            display_debug_panel()
+        else:
+            st.info(
+                """
+            **使用说明：**
+            
+            1. 使用搜索框快速找到想要的音色
+            2. 选择一个已准备好的音色
+            3. 输入要测试的文本
+            4. 调整音频参数
+            5. 点击生成按钮
+            6. 播放或下载生成的音频
+            
+            **搜索功能：**
+            - 支持按音色ID搜索
+            - 支持按音色描述搜索
+            - 不区分大小写
+            - 实时过滤显示结果
+            
+            **音频参数：**
+            - 语速: 0.5-2.0，1.0为正常速度
+            - 音量: 0-10，1.0为正常音量
+            - 音调: -12到12，0为正常音调
+            - 情感: 选择语音的情感表达
+            - 语言增强: 提高特定语言的发音质量
+            
+            **支持的音频格式：**
+            - MP3 (默认)
+            - 采样率: 44100
+            - 比特率: 256kbps
             """
-        **使用说明：**
-        
-        1. 使用搜索框快速找到想要的音色
-        2. 选择一个已准备好的音色
-        3. 输入要测试的文本
-        4. 调整音频参数
-        5. 点击生成按钮
-        6. 播放或下载生成的音频
-        
-        **搜索功能：**
-        - 支持按音色ID搜索
-        - 支持按音色描述搜索
-        - 不区分大小写
-        - 实时过滤显示结果
-        
-        **音频参数：**
-        - 语速: 0.5-2.0，1.0为正常速度
-        - 音量: 0-10，1.0为正常音量
-        - 音调: -12到12，0为正常音调
-        - 情感: 选择语音的情感表达
-        - 语言增强: 提高特定语言的发音质量
-        
-        **支持的音频格式：**
-        - MP3 (默认)
-        - 采样率: 44100
-        - 比特率: 256kbps
-        """
-        )
+            )

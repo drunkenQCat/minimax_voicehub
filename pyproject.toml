@@ -16,3 +16,9 @@ dependencies = [
 dftt-timecode = { git = "https://github.com/drunkenQCat/dftt_timecode.git", branch = "dev" }
 minimax_speech = { git = "https://github.com/drunkenQCat/minimax_speech.git", branch = "master" }
 bwav-otio-composer = { git = "https://github.com/drunkenQCat/bwav-otio-composer.git", branch = "master" }
+
+[dependency-groups]
+dev = [
+    "ipdb>=0.13.13",
+    "ipython>=9.4.0",
+]
