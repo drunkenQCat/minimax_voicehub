@@ -50,7 +50,8 @@ def render_system_voices_manager(voice_manager: VoiceManager):
                 # 创建一个类似Voice枚举的对象
                 api_voice = APIVoice(
                     voice_id=voice_info.voice_id,
-                    name=voice_info.voice_name or voice_info.voice_id,
+                    name=voice_info.voice_name  # pyright: ignore
+                    or voice_info.voice_id,
                     description=voice_info.description or "",
                 )
                 api_voices.append(api_voice)

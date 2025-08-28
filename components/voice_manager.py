@@ -4,8 +4,7 @@ MiniMax 音色管理器核心类
 
 import os
 import streamlit as st
-from typing import Any
-from minimax_speech import MiniMaxSpeech
+from minimax_speech import MiniMaxSpeech, SystemVoice
 from minimax_speech.voice_query_models import VoiceCloning
 from minimax_speech.tts_models import T2AResponse
 
@@ -16,7 +15,7 @@ class VoiceManager:
     client: MiniMaxSpeech
     cloned_voices_cache: list[VoiceCloning] | None
     cloned_voices_cache_time: int
-    system_voices_cache: list[Any] | None
+    system_voices_cache: list[SystemVoice] | None
     system_voices_cache_time: int
     current_voice: str = ""
 
@@ -66,7 +65,7 @@ class VoiceManager:
                     self.current_voice = self.cloned_voices_cache[0].voice_id
             except Exception as e:
                 st.error(f"获取克隆音色列表失败: {str(e)}")
-                self.cloned_voices_cache = []
+                self.cloned_voices_cache = None
             return self.cloned_voices_cache
 
         elif voice_type == "system":
@@ -86,10 +85,10 @@ class VoiceManager:
                     self.current_voice = self.system_voices_cache[0].voice_id
             except Exception as e:
                 st.error(f"获取系统音色列表失败: {str(e)}")
-                self.system_voices_cache = []
+                self.system_voices_cache = None
             return self.system_voices_cache
 
-        return []
+        return None
 
     def delete_voice(self, voice_id: str):
         """删除音色"""
